@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Firebase
 import OSLog
 
 struct LoginView: View {
@@ -16,10 +15,9 @@ struct LoginView: View {
     @State var password = ""
     @State var name = ""
     @State var logInStatusMessage = ""
+    @State var shouldShowImagePicker = false
     
-    init() {
-        FirebaseApp.configure()
-    }
+    @State var image: UIImage?
 
     var body: some View {
         NavigationView {
@@ -32,13 +30,25 @@ struct LoginView: View {
                             .tag(false)
                     }.pickerStyle(SegmentedPickerStyle())
                     
-                    if isLoginMode {
+                    if !isLoginMode {
                         Button {
-                            
+                            shouldShowImagePicker.toggle()
                         } label: {
-                            Image(systemName: "person.fill")
-                                .font(.system(size: 64))
-                                .padding()
+                            VStack {
+                                if let image = self.image {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 128, height: 128)
+                                        .cornerRadius(64)
+                                } else {
+                                    Image(systemName: "person.fill")
+                                        .font(.system(size: 64))
+                                        .padding()
+                                }
+                            }
+                            .overlay(RoundedRectangle(cornerRadius: 64).stroke(Color.gray, lineWidth: 3))
+
                         }
                     }
 
@@ -75,25 +85,80 @@ struct LoginView: View {
                 .ignoresSafeArea())
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .fullScreenCover(isPresented: $shouldShowImagePicker) {
+            ImagePicker(image: $image)
+        }
     }
 
     private func handleAction() {
         if isLoginMode {
-            print("Should log into Firebase with existing credentials \(email) \(password)")
+            logIn()
         } else {
-            print("Register a new account inside of Firebase Auth and store image in Storage somehow...")
+            createNewAccount()
         }
     }
 
     private func createNewAccount() {
-        Auth.auth().createUser(withEmail: email, password: password) {
+        FirebaseManager.shared.auth.createUser(withEmail: email, password: password) {
             result, err in
             if let err = err {
                 os_log("Failed to create new user %@", err.localizedDescription)
                 self.logInStatusMessage = "Failed to create user: \(err)"
+                return
             }
-            if let result = result {
-                
+            self.logInStatusMessage = "Successfully sign up"
+            persistImageToStorage()
+        }
+    }
+    
+    private func logIn() {
+        FirebaseManager.shared.auth.signIn(withEmail: email, password: password) {
+            result, err in
+            if let err = err {
+                self.logInStatusMessage = "Failed to create user: \(err)"
+                return
+            }
+            self.logInStatusMessage = "Successfully log in"
+        }
+    }
+    
+    private func persistImageToStorage() {
+        guard let uid = FirebaseManager.shared.auth.currentUser?.uid else {
+            return
+        }
+        let ref = FirebaseManager.shared.storage.reference(withPath: uid)
+        guard let imageData = self.image?.jpegData(compressionQuality: 0.5) else {
+            return
+        }
+        ref.putData(imageData, metadata: nil) { metadata, err in
+            if let err = err {
+                self.logInStatusMessage = "Failed to push image to storage \(err)"
+            }
+
+            ref.downloadURL { url, err in
+                if let err = err {
+                    self.logInStatusMessage = "Failed to retrieve downloadURL: \(err)"
+                    return
+                }
+                storeUserInformation(imageProfileUrl: url)
+            }
+        }
+    }
+    
+    private func storeUserInformation(imageProfileUrl: URL?) {
+        guard let url = imageProfileUrl else {
+            return
+        }
+        guard let uid = FirebaseManager.shared.auth.currentUser?.uid else {
+            return
+        }
+
+        let userData = ["email": email, "imageProfileUrl": url.absoluteString]
+        FirebaseManager.shared.firestore.collection("users").document(uid).setData(userData) {
+            err in
+            if let err = err {
+                self.logInStatusMessage = "Failed to update user into \(err)"
+                return
             }
         }
     }
