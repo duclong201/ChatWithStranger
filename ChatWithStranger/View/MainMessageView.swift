@@ -7,24 +7,32 @@
 
 import SwiftUI
 import OSLog
+import SDWebImageSwiftUI
 
 struct ChatUser {
-    let uid, name, email, profileImageUrl: String
+    let uid, email, profileImageUrl: String
 }
 
 class MainMessagesViewModel: ObservableObject {
-    
+
     @Published var errorMessage = ""
+    @Published var chatUser: ChatUser?
+    @Published var isUserCurrentlyLoggedOut = false
 
     init() {
+        DispatchQueue.main.async {
+            self.isUserCurrentlyLoggedOut = FirebaseManager.shared.auth.currentUser?.uid == nil
+        }
         fetchCurrentUser()
     }
 
-    private func fetchCurrentUser() {
+    func fetchCurrentUser() {
+        
         guard let uid = FirebaseManager.shared.auth.currentUser?.uid else {
             self.errorMessage = "Could not find user id"
             return
         }
+        
         self.errorMessage = "\(uid)"
         FirebaseManager.shared.firestore.collection("users").document(uid).getDocument { snapshot, err in
             if let err = err {
@@ -36,8 +44,16 @@ class MainMessagesViewModel: ObservableObject {
                 self.errorMessage = "No data found"
                 return
             }
+            let email = data["email"] as? String ?? ""
+            let profileImageUrl = data["profileImageUrl"] as? String ?? ""
+            self.chatUser = ChatUser(uid: uid, email: email, profileImageUrl: profileImageUrl)
             self.errorMessage = "\(data)"
         }
+    }
+    
+    func handleSignOut() {
+        isUserCurrentlyLoggedOut.toggle()
+        try? FirebaseManager.shared.auth.signOut()
     }
 }
 
@@ -48,12 +64,15 @@ struct MainMessageView: View {
 
     private var customNavBar: some View {
         HStack(spacing: 16) {
-
-            Image(systemName: "person.fill")
-                .font(.system(size: 34, weight: .heavy))
+            
+            WebImage(url: URL(string: vm.chatUser?.profileImageUrl ?? "")).resizable()
+                .frame(width: 50, height: 50)
+                .cornerRadius(50)
+                .clipped()
+                .overlay(RoundedRectangle(cornerRadius: 50).stroke(Color.black, lineWidth: 1))
     
             VStack(alignment: .leading, spacing: 4) {
-                Text("User name")
+                Text("\(vm.chatUser?.email ?? "Unknown")")
                     .font(.system(size: 24, weight: .bold))
                 HStack(spacing: 5) {
                     Circle()
@@ -78,9 +97,16 @@ struct MainMessageView: View {
         .actionSheet(isPresented: $shouldShowLogOutOptions) {
             .init(title: Text("Settings"), message: Text("What do you want to do?"), buttons: [
                 .destructive(Text("Sign out"), action: {
-                    print("Handle sign out")
+                    vm.handleSignOut()
                 }),
-                .cancel()])
+                .cancel()
+            ])
+        }
+        .fullScreenCover(isPresented: $vm.isUserCurrentlyLoggedOut, onDismiss: nil) {
+            LoginView(didCompleteLoginProcess: {
+                self.vm.isUserCurrentlyLoggedOut = false
+                self.vm.fetchCurrentUser()
+            })
         }
     }
     
@@ -134,7 +160,6 @@ struct MainMessageView: View {
     var body: some View {
         NavigationView {
             VStack {
-                Text("Current user id \(vm.errorMessage)")
                 customNavBar
                 messageView
             }.overlay(

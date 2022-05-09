@@ -7,17 +7,20 @@
 
 import SwiftUI
 import OSLog
+import FirebaseStorage
 
 struct LoginView: View {
     
-    @State var isLoginMode = false
-    @State var email = ""
-    @State var password = ""
-    @State var name = ""
-    @State var logInStatusMessage = ""
-    @State var shouldShowImagePicker = false
+    let didCompleteLoginProcess: () -> ()
     
-    @State var image: UIImage?
+    @State private var isLoginMode = false
+    @State private var email = ""
+    @State private var password = ""
+    @State private var name = ""
+    @State private var logInStatusMessage = ""
+    @State private var shouldShowImagePicker = false
+    
+    @State private var image: UIImage?
 
     var body: some View {
         NavigationView {
@@ -119,6 +122,7 @@ struct LoginView: View {
                 return
             }
             self.logInStatusMessage = "Successfully log in"
+            self.didCompleteLoginProcess()
         }
     }
     
@@ -130,7 +134,9 @@ struct LoginView: View {
         guard let imageData = self.image?.jpegData(compressionQuality: 0.5) else {
             return
         }
-        ref.putData(imageData, metadata: nil) { metadata, err in
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/jpeg"
+        ref.putData(imageData, metadata: metadata) { metadata, err in
             if let err = err {
                 self.logInStatusMessage = "Failed to push image to storage \(err)"
             }
@@ -140,32 +146,34 @@ struct LoginView: View {
                     self.logInStatusMessage = "Failed to retrieve downloadURL: \(err)"
                     return
                 }
+                guard let url = url else { return }
                 storeUserInformation(imageProfileUrl: url)
             }
         }
     }
     
-    private func storeUserInformation(imageProfileUrl: URL?) {
-        guard let url = imageProfileUrl else {
-            return
-        }
+    private func storeUserInformation(imageProfileUrl: URL) {
         guard let uid = FirebaseManager.shared.auth.currentUser?.uid else {
             return
         }
 
-        let userData = ["email": email, "imageProfileUrl": url.absoluteString]
+        let userData = ["email": self.email, "imageProfileUrl": imageProfileUrl.absoluteString]
         FirebaseManager.shared.firestore.collection("users").document(uid).setData(userData) {
             err in
             if let err = err {
                 self.logInStatusMessage = "Failed to update user into \(err)"
                 return
             }
+            self.didCompleteLoginProcess()
         }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        LoginView()
+        LoginView(didCompleteLoginProcess: {
+//            MainMessageView()
+        })
+//        MainMessageView()
     }
 }
