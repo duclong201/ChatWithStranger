@@ -9,10 +9,6 @@ import SwiftUI
 import OSLog
 import SDWebImageSwiftUI
 
-struct ChatUser {
-    let uid, email, profileImageUrl: String
-}
-
 class MainMessagesViewModel: ObservableObject {
 
     @Published var errorMessage = ""
@@ -44,10 +40,7 @@ class MainMessagesViewModel: ObservableObject {
                 self.errorMessage = "No data found"
                 return
             }
-            let email = data["email"] as? String ?? ""
-            let profileImageUrl = data["profileImageUrl"] as? String ?? ""
-            self.chatUser = ChatUser(uid: uid, email: email, profileImageUrl: profileImageUrl)
-            self.errorMessage = "\(data)"
+            self.chatUser = ChatUser(data: data)
         }
     }
     
@@ -60,16 +53,19 @@ class MainMessagesViewModel: ObservableObject {
 struct MainMessageView: View {
     
     @State var shouldShowLogOutOptions = false
+    @State var shouldShowNewMessageScreen = false
+    @State var chatUser: ChatUser?
+    @State var shouldNavigateToChatLogView = false
+
     @ObservedObject private var vm = MainMessagesViewModel()
 
     private var customNavBar: some View {
         HStack(spacing: 16) {
-            
             WebImage(url: URL(string: vm.chatUser?.profileImageUrl ?? "")).resizable()
-                .frame(width: 50, height: 50)
-                .cornerRadius(50)
+                .frame(width: 70, height: 70)
+                .cornerRadius(70)
                 .clipped()
-                .overlay(RoundedRectangle(cornerRadius: 50).stroke(Color.black, lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: 70).stroke(Color.gray, lineWidth: 2))
     
             VStack(alignment: .leading, spacing: 4) {
                 Text("\(vm.chatUser?.email ?? "Unknown")")
@@ -114,34 +110,38 @@ struct MainMessageView: View {
         ScrollView {
             ForEach(0..<10, id: \.self) { num in
                 VStack {
-                    HStack(spacing: 15) {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 32))
-                            .padding(8)
-                            .overlay(RoundedRectangle(cornerRadius: 44).stroke(Color.black, lineWidth: 1))
-                        
-                        VStack(alignment: .leading) {
-                            Text("Username")
-                                .font(.system(size: 14, weight: .bold))
-                            Text("Message sent")
-                                .font(.system(size: 12))
-                                .foregroundColor(Color(.lightGray))
+                    NavigationLink {
+                        Text("Destination")
+                    } label: {
+                        HStack(spacing: 15) {
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 32))
+                                .padding(8)
+                                .overlay(RoundedRectangle(cornerRadius: 44).stroke(Color.black, lineWidth: 1))
+                    
+                            VStack(alignment: .leading) {
+                                Text("Username")
+                                    .font(.system(size: 14, weight: .bold))
+                                Text("Message sent")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(Color(.lightGray))
+                            }
+                            Spacer()
+                            
+                            Text("22d")
+                                .font(.system(size: 14, weight: .semibold))
                         }
-                        Spacer()
-                        
-                        Text("22d")
-                            .font(.system(size: 14, weight: .semibold))
+                        Divider()
+                            .padding(.vertical, 8)
                     }
-                    Divider()
-                        .padding(.vertical, 8)
                 }.padding(.horizontal)
             }.padding(.bottom, 50)
         }
     }
-    
+
     private var newMessageButton: some View {
         Button {
-            
+            shouldShowNewMessageScreen.toggle()
         } label: {
             HStack {
                 Spacer()
@@ -155,6 +155,12 @@ struct MainMessageView: View {
             .padding(.horizontal)
             .shadow(radius: 15)
         }
+        .fullScreenCover(isPresented: $shouldShowNewMessageScreen) {
+            CreateNewMessageView(didSelectNewUser: { user in
+                shouldNavigateToChatLogView.toggle()
+                self.chatUser = user
+            })
+        }
     }
 
     var body: some View {
@@ -162,6 +168,9 @@ struct MainMessageView: View {
             VStack {
                 customNavBar
                 messageView
+                NavigationLink("", isActive: $shouldNavigateToChatLogView) {
+                    ChatLogView(chatUser: self.chatUser)
+                }
             }.overlay(
                 newMessageButton, alignment: .bottom)
             .navigationBarHidden(true)

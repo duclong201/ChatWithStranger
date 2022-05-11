@@ -21,6 +21,9 @@
 		413845D7282677BB0014E641 /* ImageDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 413845D6282677BB0014E641 /* ImageDownloadManager.swift */; };
 		413845D9282682860014E641 /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 413845D8282682860014E641 /* ImageManager.swift */; };
 		413845DB2826835A0014E641 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 413845DA2826835A0014E641 /* Extensions.swift */; };
+		413845DD282A6E3B0014E641 /* ChatUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 413845DC282A6E3A0014E641 /* ChatUser.swift */; };
+		413845DF282BD1D00014E641 /* CreateNewMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 413845DE282BD1D00014E641 /* CreateNewMessageView.swift */; };
+		413845E1282BDF950014E641 /* ChatLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 413845E0282BDF940014E641 /* ChatLogView.swift */; };
 		41C674C22823F1E500252BC8 /* ChatWithStrangerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C674C12823F1E500252BC8 /* ChatWithStrangerApp.swift */; };
 		41C674C42823F1E500252BC8 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C674C32823F1E500252BC8 /* LoginView.swift */; };
 		41C674C62823F1E700252BC8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 41C674C52823F1E700252BC8 /* Assets.xcassets */; };
@@ -37,6 +40,9 @@
 		413845D6282677BB0014E641 /* ImageDownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageDownloadManager.swift; sourceTree = "<group>"; };
 		413845D8282682860014E641 /* ImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
 		413845DA2826835A0014E641 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		413845DC282A6E3A0014E641 /* ChatUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatUser.swift; sourceTree = "<group>"; };
+		413845DE282BD1D00014E641 /* CreateNewMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateNewMessageView.swift; sourceTree = "<group>"; };
+		413845E0282BDF940014E641 /* ChatLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLogView.swift; sourceTree = "<group>"; };
 		41C674BE2823F1E500252BC8 /* ChatWithStranger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatWithStranger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		41C674C12823F1E500252BC8 /* ChatWithStrangerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatWithStrangerApp.swift; sourceTree = "<group>"; };
 		41C674C32823F1E500252BC8 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
@@ -66,6 +72,8 @@
 			isa = PBXGroup;
 			children = (
 				413845CE2825F2DD0014E641 /* MainMessageView.swift */,
+				413845DE282BD1D00014E641 /* CreateNewMessageView.swift */,
+				413845E0282BDF940014E641 /* ChatLogView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -76,6 +84,7 @@
 				413845BA2825E5CC0014E641 /* ImagePicker.swift */,
 				413845BC2825EDE90014E641 /* Cache.swift */,
 				413845C92825EEFF0014E641 /* User.swift */,
+				413845DC282A6E3A0014E641 /* ChatUser.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -213,8 +222,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				413845E1282BDF950014E641 /* ChatLogView.swift in Sources */,
+				413845DD282A6E3B0014E641 /* ChatUser.swift in Sources */,
 				413845BB2825E5CC0014E641 /* ImagePicker.swift in Sources */,
 				41C674C42823F1E500252BC8 /* LoginView.swift in Sources */,
+				413845DF282BD1D00014E641 /* CreateNewMessageView.swift in Sources */,
 				413845D12825FFD90014E641 /* FirebaseManager.swift in Sources */,
 				413845D9282682860014E641 /* ImageManager.swift in Sources */,
 				413845D7282677BB0014E641 /* ImageDownloadManager.swift in Sources */,

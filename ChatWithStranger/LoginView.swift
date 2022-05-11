@@ -157,7 +157,7 @@ struct LoginView: View {
             return
         }
 
-        let userData = ["email": self.email, "imageProfileUrl": imageProfileUrl.absoluteString]
+        let userData = ["email": self.email, "profileImageUrl": imageProfileUrl.absoluteString, "uid": uid]
         FirebaseManager.shared.firestore.collection("users").document(uid).setData(userData) {
             err in
             if let err = err {
@@ -172,8 +172,6 @@ struct LoginView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         LoginView(didCompleteLoginProcess: {
-//            MainMessageView()
         })
-//        MainMessageView()
     }
 }
