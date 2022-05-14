@@ -23,10 +23,13 @@ class CreateNewMessageViewModel: ObservableObject {
                 return
             }
             documentSnapshot?.documents.forEach({ snapshot in
-                let data = snapshot.data()
-                let chatUser = ChatUser(data: data)
-                if chatUser.uid != FirebaseManager.shared.auth.currentUser?.uid {
-                    self.users.append(chatUser)
+                do {
+                    let chatUser = try snapshot.data(as: ChatUser.self)
+                    if chatUser.id != FirebaseManager.shared.auth.currentUser?.uid {
+                        self.users.append(chatUser)
+                    }
+                } catch {
+                    self.errorMessage = "Failed to decode chat user data"
                 }
             })
         }
@@ -56,7 +59,7 @@ struct CreateNewMessageView: View {
                                 .clipped()
                                 .cornerRadius(50)
                                 .overlay(RoundedRectangle(cornerRadius: 50).stroke(Color.gray, lineWidth: 1))
-                            Text(user.email)
+                            Text(user.username)
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(.black)
                             Spacer()

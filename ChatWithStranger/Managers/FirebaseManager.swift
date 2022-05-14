@@ -9,13 +9,11 @@ import Foundation
 import Firebase
 import FirebaseStorage
 import FirebaseFirestore
-import FirebaseFunctions
 
 class FirebaseManager: NSObject {
     let auth: Auth
     let storage: Storage
     let firestore: Firestore
-    let functions: Functions
 
     static let shared = FirebaseManager()
 
@@ -25,8 +23,19 @@ class FirebaseManager: NSObject {
         self.auth = Auth.auth()
         self.storage = Storage.storage()
         self.firestore = Firestore.firestore()
-        self.functions = Functions.functions()
 
         super.init()
     }
+}
+
+struct FirebaseConstants {
+    static let uid = "uid"
+    static let messages = "messages"
+    static let fromId = "fromId"
+    static let toId = "toId"
+    static let text = "text"
+    static let timestamp = "timestamp"
+    static let recentMessage = "recent_message"
+    static let profileImageUrl = "profileImageUrl"
+    static let email = "email"
 }
